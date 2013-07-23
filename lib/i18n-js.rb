@@ -120,10 +120,16 @@ module SimplesIdeias
       file = Rails.root.join(file)
       FileUtils.mkdir_p File.dirname(file)
 
+      # This is gumroad specific code. We want non english language translations to not contain english phrases since english phrases will always be in main js bundle.
+      # This assumes each translations contains at most two languages and english is always present.
+      translations.delete(:en) if translations.keys.size > 1
+      lang = translations.keys.first
+
       File.open(file, "w+") do |f|
         f << %(var I18n = I18n || {};\n)
-        f << %(I18n.translations = );
-        f << translations.to_json
+        f << %(I18n.translations = I18n.translations || {};\n)
+        f << %(I18n.translations["#{lang}"] = );
+        f << translations[lang].to_json
         f << %(;)
       end
     end
